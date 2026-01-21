@@ -1,0 +1,7 @@
+{
+  "name": "Latin Dance Trainer",
+  "description": "An interactive trainer for Latin dances (Salsa, Bachata) featuring a movement library, local music storage, and a Gemini-powered voice assistant to guide your practice.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
