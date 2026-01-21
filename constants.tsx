@@ -8,10 +8,14 @@ export const INITIAL_DANCES: DanceStyle[] = [
     name: 'Сальса',
     description: 'Энергичный и жизнерадостный социальный танец, зародившийся на Карибах.',
     moves: [
-      { id: 's1', name: 'Базовый шаг', level: 'Beginner', videoUrl: 'https://picsum.photos/400/225' },
-      { id: 's2', name: 'Правый поворот', level: 'Beginner', videoUrl: 'https://picsum.photos/400/225' },
-      { id: 's3', name: 'Cross Body Lead', level: 'Intermediate', videoUrl: 'https://picsum.photos/400/225' },
-      { id: 's4', name: 'Dile Que No', level: 'Intermediate', videoUrl: 'https://picsum.photos/400/225' },
+      // Fix: Renamed videoUrl to videoData to match the DanceMove type.
+      { id: 's1', name: 'Базовый шаг', level: 'Beginner', videoData: 'https://picsum.photos/400/225' },
+      // Fix: Renamed videoUrl to videoData to match the DanceMove type.
+      { id: 's2', name: 'Правый поворот', level: 'Beginner', videoData: 'https://picsum.photos/400/225' },
+      // Fix: Renamed videoUrl to videoData to match the DanceMove type.
+      { id: 's3', name: 'Cross Body Lead', level: 'Intermediate', videoData: 'https://picsum.photos/400/225' },
+      // Fix: Renamed videoUrl to videoData to match the DanceMove type.
+      { id: 's4', name: 'Dile Que No', level: 'Intermediate', videoData: 'https://picsum.photos/400/225' },
     ]
   },
   {
@@ -19,9 +23,12 @@ export const INITIAL_DANCES: DanceStyle[] = [
     name: 'Бачата',
     description: 'Чувственный и ритмичный танец из Доминиканской Республики.',
     moves: [
-      { id: 'b1', name: 'Базовый шаг (в сторону)', level: 'Beginner', videoUrl: 'https://picsum.photos/400/225' },
-      { id: 'b2', name: 'Квадрат (Box Step)', level: 'Beginner', videoUrl: 'https://picsum.photos/400/225' },
-      { id: 'b3', name: 'Sweetheart', level: 'Intermediate', videoUrl: 'https://picsum.photos/400/225' },
+      // Fix: Renamed videoUrl to videoData to match the DanceMove type.
+      { id: 'b1', name: 'Базовый шаг (в сторону)', level: 'Beginner', videoData: 'https://picsum.photos/400/225' },
+      // Fix: Renamed videoUrl to videoData to match the DanceMove type.
+      { id: 'b2', name: 'Квадрат (Box Step)', level: 'Beginner', videoData: 'https://picsum.photos/400/225' },
+      // Fix: Renamed videoUrl to videoData to match the DanceMove type.
+      { id: 'b3', name: 'Sweetheart', level: 'Intermediate', videoData: 'https://picsum.photos/400/225' },
     ]
   }
 ];

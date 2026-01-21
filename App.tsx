@@ -2,19 +2,17 @@
 import React, { useState, useEffect } from 'react';
 import { AppView, DanceStyle, Song } from './types.ts';
 import { INITIAL_DANCES, COLORS } from './constants.tsx';
-import Dashboard from './components/Dashboard.tsx';
-import Library from './components/Library.tsx';
+import Elements from './components/Elements.tsx';
 import MusicLibrary from './components/MusicLibrary.tsx';
 import Trainer from './components/Trainer.tsx';
 import { getAllSongs } from './db.ts';
 
 const App: React.FC = () => {
-  const [view, setView] = useState<AppView>('dashboard');
+  const [view, setView] = useState<AppView>('library');
   const [dances, setDances] = useState<DanceStyle[]>([]);
   const [songs, setSongs] = useState<Song[]>([]);
 
   useEffect(() => {
-    // Load dances from localStorage or initial constants
     const savedDances = localStorage.getItem('dance_styles');
     if (savedDances) {
       setDances(JSON.parse(savedDances));
@@ -23,7 +21,6 @@ const App: React.FC = () => {
       localStorage.setItem('dance_styles', JSON.stringify(INITIAL_DANCES));
     }
 
-    // Load music from IndexedDB
     const loadMusic = async () => {
       try {
         const loadedSongs = await getAllSongs();
@@ -46,54 +43,55 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950">
-      {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-4 py-3">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('dashboard')}>
-            <div className="w-8 h-8 bg-rose-600 rounded-full flex items-center justify-center">
-              <span className="text-white font-bold">L</span>
-            </div>
-            <h1 className="text-xl font-bold tracking-tight">Latin<span className={COLORS.accent}>Dance</span> Trainer</h1>
-          </div>
-          <nav className="hidden md:flex items-center gap-6">
-            <button onClick={() => setView('dashboard')} className={`text-sm font-medium transition ${view === 'dashboard' ? COLORS.accent : 'text-slate-400 hover:text-white'}`}>Главная</button>
-            <button onClick={() => setView('library')} className={`text-sm font-medium transition ${view === 'library' ? COLORS.accent : 'text-slate-400 hover:text-white'}`}>Библиотека</button>
-            <button onClick={() => setView('music')} className={`text-sm font-medium transition ${view === 'music' ? COLORS.accent : 'text-slate-400 hover:text-white'}`}>Музыка</button>
-            <button onClick={() => setView('training')} className={`px-4 py-1.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold transition shadow-lg shadow-rose-900/20`}>Тренировка</button>
-          </nav>
+    <div className="min-h-screen flex bg-slate-950 text-slate-200">
+      {/* Left Sidebar Navigation */}
+      <aside className="w-20 md:w-24 flex flex-col items-center py-8 bg-slate-900 border-r border-slate-800 z-50">
+        <div className="w-12 h-12 bg-rose-600 rounded-2xl flex items-center justify-center mb-12 shadow-lg shadow-rose-900/40">
+          <span className="text-white font-black text-2xl">L</span>
         </div>
-      </header>
+        
+        <nav className="flex flex-col gap-8">
+          <button 
+            onClick={() => setView('library')} 
+            title="Элементы"
+            className={`p-3 rounded-2xl transition-all duration-300 ${view === 'library' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+          </button>
+          
+          <button 
+            onClick={() => setView('music')} 
+            title="Музыка"
+            className={`p-3 rounded-2xl transition-all duration-300 ${view === 'music' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+            </svg>
+          </button>
+          
+          <button 
+            onClick={() => setView('training')} 
+            title="Тренировка"
+            className={`p-3 rounded-2xl transition-all duration-300 ${view === 'training' ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/20' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </button>
+        </nav>
+      </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {view === 'dashboard' && <Dashboard setView={setView} />}
-          {view === 'library' && <Library dances={dances} onUpdateDances={updateDances} />}
-          {view === 'music' && <MusicLibrary songs={songs} onRefresh={refreshSongs} />}
+      <main className="flex-1 overflow-y-auto h-screen custom-scrollbar">
+        <div className="max-w-6xl mx-auto px-6 py-10">
+          {view === 'library' && <Elements dances={dances} onUpdateDances={updateDances} />}
+          {view === 'music' && <MusicLibrary songs={songs} dances={dances} onRefresh={refreshSongs} />}
           {view === 'training' && <Trainer dances={dances} songs={songs} />}
         </div>
       </main>
-
-      {/* Mobile Navigation */}
-      <footer className="md:hidden sticky bottom-0 bg-slate-900 border-t border-slate-800 grid grid-cols-4 px-2 py-3">
-        <button onClick={() => setView('dashboard')} className={`flex flex-col items-center gap-1 ${view === 'dashboard' ? COLORS.accent : 'text-slate-500'}`}>
-          <div className="w-5 h-5">🏠</div>
-          <span className="text-[10px]">Главная</span>
-        </button>
-        <button onClick={() => setView('library')} className={`flex flex-col items-center gap-1 ${view === 'library' ? COLORS.accent : 'text-slate-500'}`}>
-          <div className="w-5 h-5">💃</div>
-          <span className="text-[10px]">Движения</span>
-        </button>
-        <button onClick={() => setView('music')} className={`flex flex-col items-center gap-1 ${view === 'music' ? COLORS.accent : 'text-slate-500'}`}>
-          <div className="w-5 h-5">🎵</div>
-          <span className="text-[10px]">Медиа</span>
-        </button>
-        <button onClick={() => setView('training')} className={`flex flex-col items-center gap-1 ${view === 'training' ? COLORS.accent : 'text-slate-500'}`}>
-          <div className="w-5 h-5">🔥</div>
-          <span className="text-[10px]">Старт</span>
-        </button>
-      </footer>
     </div>
   );
 };

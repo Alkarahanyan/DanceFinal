@@ -3,7 +3,7 @@ export interface DanceMove {
   id: string;
   name: string;
   description?: string;
-  videoUrl?: string;
+  videoData?: string;
   level: 'Beginner' | 'Intermediate' | 'Advanced';
 }
 
@@ -19,8 +19,9 @@ export interface Song {
   title: string;
   artist: string;
   danceStyle: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
   blob: Blob;
   duration: number;
 }
 
-export type AppView = 'dashboard' | 'library' | 'music' | 'training';
+export type AppView = 'library' | 'music' | 'training';

@@ -34,11 +34,12 @@ const Library: React.FC<LibraryProps> = ({ dances, onUpdateDances }) => {
     const moveName = prompt("Введите название движения:");
     if (!moveName) return;
     
+    // Fix: Renamed videoUrl to videoData to match the DanceMove type.
     const newMove: DanceMove = {
       id: `move-${Date.now()}`,
       name: moveName,
       level: 'Beginner',
-      videoUrl: 'https://picsum.photos/400/225'
+      videoData: 'https://picsum.photos/400/225'
     };
 
     const updatedDances = dances.map(d => 
@@ -112,7 +113,8 @@ const Library: React.FC<LibraryProps> = ({ dances, onUpdateDances }) => {
             {selectedStyle.moves.map(move => (
               <div key={move.id} className="group bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 hover:border-rose-500/50 transition">
                 <div className="relative aspect-video overflow-hidden">
-                  <img src={move.videoUrl} alt={move.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+                  {/* Fix: Use move.videoData to access the video source. */}
+                  <img src={move.videoData} alt={move.name} className="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
                   <div className="absolute top-2 right-2 px-2 py-1 bg-black/50 backdrop-blur rounded text-[10px] font-bold uppercase">
                     {translateLevel(move.level)}
                   </div>
