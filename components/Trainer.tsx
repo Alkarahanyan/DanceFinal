@@ -13,6 +13,7 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
   const [isActive, setIsActive] = useState(false);
   const [selectedStyleId, setSelectedStyleId] = useState<string>(dances[0]?.id || '');
   const [selectedSongId, setSelectedSongId] = useState<string>(songs[0]?.id || '');
+  const [selectedVoice, setSelectedVoice] = useState<string>('spanish-female');
   const [currentMove, setCurrentMove] = useState<DanceMove | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [moveInterval, setMoveInterval] = useState(10); // in seconds
@@ -107,7 +108,7 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
     const move = selectedStyle.moves[Math.floor(Math.random() * selectedStyle.moves.length)];
     // Set the UI and speak the command for the *same* move, preventing desync.
     setCurrentMove(move);
-    await assistant.speak(move.name);
+    await assistant.speak(move.name, selectedVoice);
   };
 
   const translateLevel = (level: string) => ({ Beginner: 'Начинающий', Intermediate: 'Средний', Advanced: 'Профи' }[level] || level);
@@ -138,6 +139,27 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="space-y-3"><label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Стиль танца</label><div className="relative"><select className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 text-lg font-bold outline-none focus:ring-2 ring-rose-500 appearance-none transition-all cursor-pointer" value={selectedStyleId} onChange={(e) => setSelectedStyleId(e.target.value)}>{dances.map(d => (<option key={d.id} value={d.id}>{d.name} ({d.moves.length} эл.)</option>))}</select><div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg></div></div></div>
           <div className="space-y-3"><label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Музыка</label><div className="relative"><select className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 text-lg font-bold outline-none focus:ring-2 ring-rose-500 appearance-none transition-all cursor-pointer" value={selectedSongId} onChange={(e) => setSelectedSongId(e.target.value)}><option value="">Только голос тренера</option>{songs.map(s => (<option key={s.id} value={s.id}>{s.title}</option>))}</select><div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg></div></div></div>
+        </div>
+
+        <div className="space-y-3">
+            <label className="text-xs font-black text-slate-500 uppercase tracking-widest block">Голос тренера</label>
+            <div className="relative">
+                <select 
+                    className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 text-lg font-bold outline-none focus:ring-2 ring-rose-500 appearance-none transition-all cursor-pointer" 
+                    value={selectedVoice} 
+                    onChange={(e) => setSelectedVoice(e.target.value)}
+                >
+                    <option value="spanish-female">Испанский женский</option>
+                    <option value="spanish-male">Испанский мужской</option>
+                    <option value="russian-female">Русский женский</option>
+                    <option value="russian-male">Русский мужской</option>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                </div>
+            </div>
         </div>
         
         <div className="space-y-3 pt-4 border-t border-slate-800/50">
