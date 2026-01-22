@@ -1,87 +1,82 @@
 
-import { GoogleGenAI, Modality } from "@google/genai";
+export class BrowserVoiceAssistant {
+  private synthesis: SpeechSynthesis;
 
-// Base64 decoding for raw PCM audio from Gemini
-function decode(base64: string) {
-  const binaryString = atob(base64);
-  const len = binaryString.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
-  }
-  return bytes;
-}
-
-async function decodeAudioData(
-  data: Uint8Array,
-  ctx: AudioContext,
-  sampleRate: number,
-  numChannels: number,
-): Promise<AudioBuffer> {
-  const dataInt16 = new Int16Array(data.buffer);
-  const frameCount = dataInt16.length / numChannels;
-  const buffer = ctx.createBuffer(numChannels, frameCount, sampleRate);
-
-  for (let channel = 0; channel < numChannels; channel++) {
-    const channelData = buffer.getChannelData(channel);
-    for (let i = 0; i < frameCount; i++) {
-      channelData[i] = dataInt16[i * numChannels + channel] / 32768.0;
+  constructor() {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      this.synthesis = window.speechSynthesis;
+    } else {
+      console.error("Browser Speech Synthesis API not supported.");
+      // Предоставляем "заглушку", чтобы избежать ошибок во время выполнения
+      this.synthesis = {
+        speak: () => {},
+        cancel: () => {},
+      } as unknown as SpeechSynthesis;
     }
   }
-  return buffer;
-}
 
-export class GeminiVoiceAssistant {
-  private audioContext: AudioContext | null = null;
+  speak(text: string): Promise<void> {
+    return new Promise((resolve) => {
+      if (!this.synthesis || typeof this.synthesis.speak !== 'function') {
+        console.error("Speech Synthesis not available.");
+        return resolve(); // Разрешаем промис, чтобы не останавливать цикл тренировки
+      }
 
-  constructor() {}
+      // Immediately cancel any ongoing or queued speech.
+      if (this.synthesis.speaking) {
+        this.synthesis.cancel();
+      }
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      
+      const voices = this.synthesis.getVoices();
+      const russianVoice = voices.find(voice => voice.lang === 'ru-RU');
+      
+      if (russianVoice) {
+        utterance.voice = russianVoice;
+      }
+      
+      utterance.lang = 'ru-RU';
+      utterance.rate = 0.9; // Немного медленнее для четкости
+      utterance.pitch = 1.0;
+      
+      // Safety timeout in case onend/onerror don't fire. Increased to 10s.
+      const safetyTimeout = setTimeout(() => {
+        console.warn('Сработал тайм-аут безопасности синтеза речи.');
+        resolve();
+      }, 10000);
 
-  private async getAudioContext() {
-    if (!this.audioContext) {
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
-    }
-    if (this.audioContext.state === 'suspended') {
-      await this.audioContext.resume();
-    }
-    return this.audioContext;
+      utterance.onend = () => {
+        clearTimeout(safetyTimeout);
+        resolve();
+      };
+
+      utterance.onerror = (event) => {
+        // 'interrupted' and 'cancelled' are expected when we call cancel() or speak() again.
+        // We don't need to log these as errors.
+        // Fix: Corrected typo from 'cancelled' to 'canceled' to match SpeechSynthesisErrorCode enum.
+        if (event.error !== 'interrupted' && event.error !== 'canceled') {
+          console.error("Ошибка SpeechSynthesis:", event.error);
+        }
+        clearTimeout(safetyTimeout);
+        resolve(); // Always resolve to not break the training loop.
+      };
+
+      // A brief delay after calling cancel() can help prevent race conditions in some browsers.
+      setTimeout(() => {
+        this.synthesis.speak(utterance);
+      }, 50);
+    });
   }
 
-  async speak(text: string): Promise<void> {
-    try {
-      // Fix: Always initialize GoogleGenAI with { apiKey: process.env.API_KEY } strictly as per guidelines.
-      const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash-preview-tts",
-        contents: [{ parts: [{ text: `Encouragingly say: ${text}` }] }],
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: { voiceName: 'Kore' },
-            },
-          },
-        },
-      });
-
-      const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-      if (!base64Audio) throw new Error("No audio data returned from Gemini");
-
-      const ctx = await this.getAudioContext();
-      const decodedData = decode(base64Audio);
-      const audioBuffer = await decodeAudioData(decodedData, ctx, 24000, 1);
-
-      const source = ctx.createBufferSource();
-      source.buffer = audioBuffer;
-      source.connect(ctx.destination);
-      source.start();
-
-      return new Promise((resolve) => {
-        source.onended = () => resolve();
-      });
-    } catch (error) {
-      console.error("Gemini TTS Error:", error);
+  stop(): void {
+    if (this.synthesis && typeof this.synthesis.cancel === 'function') {
+      // Check if there is something speaking before canceling.
+      if (this.synthesis.speaking) {
+        this.synthesis.cancel();
+      }
     }
   }
 }
 
-export const assistant = new GeminiVoiceAssistant();
+export const assistant = new BrowserVoiceAssistant();

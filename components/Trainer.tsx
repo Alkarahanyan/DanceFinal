@@ -19,6 +19,11 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<any>(null);
+  const isActiveRef = useRef(isActive); // ref to track active state in async cycle
+
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
 
   const selectedStyle = dances.find(d => d.id === selectedStyleId);
   const selectedSong = songs.find(s => s.id === selectedSongId);
@@ -27,6 +32,7 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       if (audioRef.current) audioRef.current.pause();
+      assistant.stop(); // Ensure assistant stops on component unmount
     };
   }, []);
 
@@ -68,6 +74,7 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
       audioRef.current.pause();
       audioRef.current = null;
     }
+    assistant.stop();
   };
 
   const startCyclingMoves = () => {
@@ -76,6 +83,11 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
       
       await pickAndAnnounce();
       
+      // After announcement (or its cancellation), check if we're still active.
+      if (!isActiveRef.current) {
+        return; // Stop the cycle.
+      }
+
       const endTime = performance.now();
       const executionTime = endTime - startTime;
       
@@ -90,7 +102,8 @@ const Trainer: React.FC<TrainerProps> = ({ dances, songs }) => {
   };
 
   const pickAndAnnounce = async () => {
-    if (!selectedStyle) return;
+    // Safeguard: Check active state before speaking.
+    if (!isActiveRef.current || !selectedStyle) return;
     const move = selectedStyle.moves[Math.floor(Math.random() * selectedStyle.moves.length)];
     // Set the UI and speak the command for the *same* move, preventing desync.
     setCurrentMove(move);
